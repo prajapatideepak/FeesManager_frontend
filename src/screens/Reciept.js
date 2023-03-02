@@ -1,0 +1,397 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
+import React, { useRef, useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import "../Styles/Studentform.css";
+import { FaUserAlt } from "react-icons/fa";
+import { IoMdLock } from "react-icons/io";
+import { IoIosArrowBack } from "react-icons/io";
+import { MdModeEditOutline, MdDelete } from "react-icons/md";
+import { AiFillCloseCircle } from "react-icons/ai";
+import { useNavigate, useLocation } from "react-router-dom";
+import ReactToPrint from "react-to-print";
+import Receipt_student from "../Componant/Receipt_student";
+import Receipt_teacher from "../Componant/Receipt_teacher";
+import { searchReceipt, getAdminVerification, deleteStudentReceipt } from '../hooks/usePost';
+import { scrollToTop } from '../hooks/helper';
+import SweetAlert from '../hooks/sweetAlert'
+import Toaster from '../hooks/showToaster';
+import { AxiosError } from "axios";
+import Loader from "../Componant/Loader";
+import { NasirContext } from "../NasirContext";
+
+const Reciept = () => {
+  const location = useLocation();
+
+  let isStaff = location.state?.isStaff;
+  let isSalaried = location.state?.isSalaried ? location.state?.isSalaried : false;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    trigger,
+    resetField,
+    clearErrors,
+  } = useForm();
+  const [model, setModel] = React.useState(false);
+  
+  const navigate = useNavigate();
+  const printRef = useRef();
+  const [print, setPrint] = useState(false);
+  const [pin, setPin] = React.useState("");
+  const [error, setError] = React.useState('');
+  const [receiptDetails, setReceiptDetails] = React.useState({});
+  const [loading, setLoading] = React.useState(true);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isDelete, setIsDelete] = React.useState(false);
+
+  const { admin, section } = React.useContext(NasirContext);
+
+  const onSubmit = async (data, e) => {
+    e.preventDefault();
+    
+    try{
+      const admin_details = await getAdminVerification({username: data.Username, password: data.Password});
+      
+      if(admin_details.data.success == 'verified'){
+        if(isDelete){ //If delete button clicked
+          try{ 
+            setIsDeleting(true)
+            
+            const res = await deleteStudentReceipt(receiptDetails.receipt_no)
+
+            setIsDeleting(false)
+            
+            if(res.data.success){
+              Toaster("success", res.data.message);
+              navigate(-1);
+              return;
+            }
+            else{
+                Toaster("error", res.data.message);
+            }
+          }
+          catch(err){
+            setIsDeleting(false)
+
+            if(err instanceof AxiosError){
+              if(err.response){
+                Toaster("error",err?.response?.data?.message);
+              }
+              else{
+                Toaster("error",err.message);
+              }
+            }
+            else{
+                Toaster("error", err.message);
+            }
+          }
+        }
+        else{ //if edit button clicked
+          navigate("/receipt/update/student", {state: {receiptDetails}});  
+          return
+        }
+
+      }
+    }
+    catch(error){
+      if(error instanceof AxiosError){
+        setError(error.response.data.error);
+      }
+      else{
+        setError(error.message);
+      }
+    }
+  };
+
+  const handleModelClose = () =>{
+    reset(); 
+    setError(''); 
+    clearErrors()
+    setModel(!model); 
+    setIsDelete(false);
+  }
+
+  const handleDelete = () =>{
+    SweetAlert('Are you sure to delete?', 'Receipt will be permanently deleted')
+    .then(async (res)=>{
+      if(res.isConfirmed){
+        setModel(true);
+        scrollToTop();
+        setIsDelete(true);
+      }
+    })
+  }
+
+  function inWords (num) {
+    let a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
+    let b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
+    if ((num = num?.toString())?.length > 9) return 'overflow';
+    let n = ('000000000' + num)?.substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return; 
+    let str = '';
+    str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'crore ' : '';
+    str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'lakh ' : '';
+    str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
+    str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
+    str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+
+    return str.toUpperCase() + ' ONLY';
+  }
+
+  useEffect(()=>{
+    async function getReceiptDetails(){
+     
+      try{
+        let receipt_details = await searchReceipt(location.state.fees_receipt_id, section == 'primary' ? 1 : 0);
+        receipt_details = receipt_details.data.student_receipts[0]
+        setReceiptDetails(()=>{
+          let date = new Date(receipt_details?.academics[0].fees[0].fees_receipt[0].date);
+          date = `${date.getDate() < 10 ? "0" + date.getDate() : date.getDate()}-${date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1}-${date.getFullYear()}`
+
+          let amountInWords = inWords(receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].amount)
+          
+          return {
+            receipt_no: receipt_details?.academics[0].fees[0].fees_receipt[0].fees_receipt_id,
+            stream: receipt_details?.academics[0].class[0].stream,
+            medium: receipt_details?.academics[0].class[0].medium,
+            date,
+            roll_no: receipt_details?.student_id,
+            class_name: receipt_details?.academics[0].class[0].class_name,
+            class_fees: receipt_details?.academics[0].class[0].fees,
+            batch: receipt_details?.academics[0].class[0].batch_start_year,
+            batch_duration: receipt_details?.academics[0].class[0].batch_duration,
+            full_name: receipt_details?.basic_info[0].full_name,
+            amount_in_words: amountInWords,
+            is_by_cash: receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].is_by_cash,
+            is_by_upi: receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].is_by_upi,
+            is_by_cheque: receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].is_by_cheque,
+            upi_no: receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].upi_no,
+            cheque_no: receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].cheque_no,
+            cheque_date: receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].cheque_date,
+            amount: receipt_details?.academics[0].fees[0].fees_receipt[0].transaction[0].amount,
+            discount: receipt_details?.academics[0].fees[0].fees_receipt[0].discount,
+            admin: receipt_details?.academics[0].fees[0].fees_receipt[0].admin[0].username,
+            is_edited: receipt_details?.academics[0].fees[0].fees_receipt[0].is_edited,
+            from_month: receipt_details?.academics[0].fees[0].fees_receipt[0].from_month,
+            to_month: receipt_details?.academics[0].fees[0].fees_receipt[0].to_month,
+            net_fees: receipt_details?.academics[0].fees[0].net_fees,
+            pending_amount: receipt_details?.academics[0].fees[0].pending_amount,
+            paid_upto: receipt_details?.academics[0].fees[0].paid_upto,
+          }
+        });
+        setLoading(false);
+      }
+      catch(err){
+        setLoading(false);
+        if(err instanceof AxiosError){
+          Toaster('error', err.response?.data?.message)
+        }
+        else{
+            Toaster('error', err.message)
+        }
+      }
+    }
+    
+    getReceiptDetails()
+  },[])
+
+  if(loading){
+    return <Loader/>
+  }
+
+  return (
+    <section className="relative">
+     {model && (
+        <div className='absolute w-full h-full  z-30 ' >
+          <div className='flex justify-center  '>
+            <div className='h-2/2 mx-auto  opacity-100 shadow-2xl rounded  mt-20 bg-white w-1/2 z-50'>
+              <div className=''>
+                <div className='flex justify-end '>
+                  <button onClick={handleModelClose} className='absolute translate-x-4 -translate-y-4 font-bold text-2xl p-2 text-red-700'>
+                      <AiFillCloseCircle />
+                  </button>
+                </div>
+                <div className='mt-7'>
+                  <h1 className='text-2xl text-center font-bold text-darkblue-500 px-6 '>Super Admin Authentication</h1>
+
+                  <form className="" onSubmit={handleSubmit(onSubmit)}>
+                    <div className="px-5 py-10">
+                      <div className=" grid grid-cols-1 rounded-lg drop-shadow-md truncate">
+                        <div className="flex flex-col items-center gap-5">
+                          <div className="Username">
+                            <label className="relative block">
+                              <span className="absolute flex items-center pl-2 mt-2">
+                                <FaUserAlt className="h-5 w-5 fill-slate-500"/>
+                              </span>
+                              <input
+                                type="text"
+                                id="Username"
+                                autoFocus={true}
+                                placeholder="Enter Username"
+                                onChange={(e) => setPin(e.target.value)}
+                                className={`w-60 mt-1 block py-2 pl-9 pr-3 bg-white border border-2 border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 outline-none ${errors.oldpassword && "border-red-600"
+                                  }`}
+                                {...register("Username", {
+                                  required: "Username is required",
+                                })}
+                                onKeyUp={() => {
+                                  trigger("Username");
+                                }}
+                              />
+                              {errors.Username && (
+                                <small className="text-red-700">
+                                  {errors.Username.message}
+                                </small>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className=" flex flex-col items-center gap-5 mt-5">
+                          <div className="confirmpassword">
+                            <label className="relative block">
+                              <span className="absolute flex items-center pl-2 mt-2">
+                                <IoMdLock className="h-5 w-5 fill-slate-500" />
+                              </span>
+                              <input
+                                type="password"
+                                id="Password"
+                                placeholder="Enter Password"
+                                onChange={(e) => setPin(e.target.value)}
+                                className={`w-60 mt-1 block py-2 pl-9 pr-3 bg-white border border-2 border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 outline-none ${errors.confirmpassword && "border-red-600"
+                                  }`}
+                                {...register("Password", {
+                                  required: "Password is required",
+                                })}
+                                onKeyUp={() => {
+                                  trigger("Password");
+                                }}
+                              />
+                              {errors.Password && (
+                                <small className="text-red-700">
+                                  {errors.Password.message}
+                                </small>
+                              )}
+                              
+                            </label>
+                          </div>
+                        </div>
+                        <div className=" flex flex-col items-center gap-5">
+                          <div className="flex lg:flex-row md:flex-col gap-4">
+                            <div className="btn mt-5 flex justify-center w-60">
+                              {/* <button
+                            type="button"
+                            onClick={handleClick}
+                            className="bg-blue-900 hover:bg-white border-2 hover:border-blue-900 text-white hover:text-blue-900 font-medium h-11 w-28 rounded-md tracking-wider"
+                          >
+                            Clear
+                          </button> */}
+
+                          
+                              <button
+                                type="submit"
+                                disabled={isDeleting}
+                                className="mt-5 bg-blue-900 drop-shadow-2xl hover:bg-white border-2 hover:border-blue-900 text-white hover:text-blue-900 font-medium h-10 w-24 rounded-md tracking-wider"
+                              >
+                                {isDeleting ? 'Loading...' : 'SUBMIT'}
+                              </button>
+                            </div>
+                          </div>
+                          {
+                            error != '' && error != undefined
+                            ?
+                              <p className="text-red-700">{error}</p>
+                            :
+                              null
+                          }     
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    )}
+      <div className={`bg-slate-100 ${model && "opacity-20"}`} >
+      <div className="flex justify-between pt-8 pb-4 px-6">
+        <h2 className=" font-bold text-darkblue-500 text-3xl">Receipt</h2>
+        {
+          location?.state?.prevPath != '/receipt/update/student' && location?.state?.prevPath != '/receipt/FeesDetail'
+          ?
+            <div className="group h-9 w-20 flex justify-center items-center gap-1 cursor-pointer" id="" onClick={() => {
+                navigate(-1)
+              }}>
+                <IoIosArrowBack className="text-2xl font-bold group-hover:text-blue-700 text-darkblue-500 mt-[3px]" />
+                <span className=" text-xl text-darkblue-500 font-semibold group-hover:text-blue-700">Back</span>
+            </div>
+          :
+            null
+        }
+      </div>
+     
+      <div ref={printRef} className={`${print ? 'mt-10 pl-12' : ''}`}>
+        {isStaff ? <Receipt_teacher isSalaried={isSalaried}/> : <Receipt_student receiptDetails={receiptDetails} forOffice=''/>}
+        { print 
+          ? 
+            isStaff 
+            ? 
+              <Receipt_teacher isSalaried={isSalaried}/> 
+            : 
+              <Receipt_student receiptDetails={receiptDetails} forOffice='(OFFICE)' />
+          : 
+          null
+        }
+
+      </div>
+      <div className="flex justify-center items-center">
+        {
+          location?.state?.is_cancelled == 0
+          ?
+            <button className="flex justify-center items-center my-5 bg-darkblue-500 py-1 px-3 rounded-md hover:opacity-60"  onClick={(e) => {setModel(true); scrollToTop()}}>
+              <MdModeEditOutline className="text-blue-300 text-lg my-1" />
+              
+                <span className="text-white text-sm pl-1">Edit</span>
+            
+            </button>
+          :
+            null
+        }
+        {
+          location?.state?.is_cancelled == 0
+          ?
+            <button className="flex justify-center items-center my-5 bg-darkblue-500 mx-4 py-1 px-3 rounded-md hover:opacity-60"  onClick={handleDelete}>
+              <MdDelete className="text-blue-300 text-lg my-1" />
+              
+                <span className="text-white text-sm pl-1">Delete</span>
+            
+            </button>
+          :
+            null
+        }
+        <ReactToPrint
+          trigger={() => (
+            <button className="bg-darkblue-500 my-8 py-1 px-3 rounded-md hover:opacity-60">
+              <span className="text-white text-sm">Download/Print</span>
+            </button>
+          )}
+          content={() => printRef.current}
+          onBeforeGetContent={() => {
+            return new Promise((resolve) => {
+              setPrint(true);
+              resolve();
+            });
+          }}
+          onAfterPrint={() => setPrint(false)}
+        />
+      </div>
+
+      </div>
+    </section>
+  );
+};
+
+export default Reciept;
