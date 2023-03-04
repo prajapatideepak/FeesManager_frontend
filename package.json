@@ -62,8 +62,8 @@
   },
   "build": {
     "extends": null,
-    "appId": "com.wellbenix.nasir_sir_classes",
-    "productName": "Nasir_Sir_And_Classes",
+    "appId": "com.wellbenix.fees_manager",
+    "productName": "Fees_manager",
     "copyright": "Copyright © 2022 Wellbenix",
     "files": [
       "dist/**/*",
