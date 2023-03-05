@@ -17,7 +17,7 @@ function Receipt_student({receiptDetails, forOffice}) {
 
   return (
     <ReceiptMainDiv
-      className={`border-4 rounded-3xl border-red-600 mx-auto mt-2`}
+      className={`border-4 rounded-3xl border-red-600 mx-auto mt-3`}
     >
       <div className="p-5">
         <div className="flex justify-between">

@@ -11,7 +11,7 @@ import { NasirContext } from "../NasirContext";
 import _ from "lodash";
 
 export default function UpdateStudentReceipt() {
-  const { admin, section } = React.useContext(NasirContext);
+  const { admin } = React.useContext(NasirContext);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ export default function UpdateStudentReceipt() {
   const [toggleCheque, setToggleCheque] = React.useState(student?.is_by_cheque);
   const [toggleUpi, setToggleUpi] = React.useState(student?.is_by_upi);
   const [toggleCash, setToggleCash] = React.useState(student?.is_by_cash);
-  const [totalMonths, setTotalMonths] = React.useState('');
   const [deduction, setDeduction] = React.useState(student?.discount);
   const [discountAppliedMsg, setDiscountAppliedMsg] = React.useState(student?.discount > 0 ? false : true);
   const [model, setModel] = React.useState(false);
@@ -73,7 +72,6 @@ export default function UpdateStudentReceipt() {
       invalid_pin: '',
       month: ''
   });
-
 
   function handleDiscount(e) {
     if(discount == '' ){
@@ -210,35 +208,6 @@ export default function UpdateStudentReceipt() {
     setDiscountAppliedMsg(true);
   }
 
-  const handleMonthChange = (e) => {
-    let value = Number(e.target.value);
-    if(value == ''){
-      setTotalMonths('')
-      setFee(0)
-      return;
-    }
-
-    let feesPerMonth = student.class_fees / student.batch_duration
-    const months = newPendingAmount/feesPerMonth
-    const monthsInDecimal = months - Math.floor(months);
-    if(monthsInDecimal > 0){
-      value -= 1
-    }
-    let selectedFeesTotal = Math.round(feesPerMonth * Number(value)) + (monthsInDecimal * feesPerMonth)
-    
-    if(selectedFeesTotal > newPendingAmount){
-      selectedFeesTotal = newPendingAmount;
-    }
-    
-    setFee(Math.round(selectedFeesTotal) - deduction)
-    setErrors((prevData) => {
-        return {
-          ...prevData,
-          month: ''
-        }
-    })
-    setTotalMonths(e.target.value);
-  }
 
   const handleDiscountValidation = (e)=>{
       const regex = new RegExp(/^[0-9]+$/)
@@ -326,7 +295,7 @@ export default function UpdateStudentReceipt() {
 
   const onSubmit = () =>{
       let err = 0;
-      if(section == 'secondary' && fee == ''){
+      if(fee == ''){
           err++;
           setErrors((prevData) => {
               return {
@@ -334,15 +303,6 @@ export default function UpdateStudentReceipt() {
                 amount: '*Please enter amount'
               }
           })
-      }
-      if(section == 'primary' && totalMonths == ''){
-        err++;
-        setErrors((prevData) => {
-            return {
-              ...prevData,
-              month: '*Please select no. of months'
-            }
-        })
       }
       if(toggleUpi && upiNo == ''){
          err++;
@@ -455,7 +415,7 @@ export default function UpdateStudentReceipt() {
           admin_id: admin?._id,
           security_pin: pin,
           last_paid: location.state.receiptDetails.from_month,
-          total_months: Number(totalMonths),
+          total_months: 0,
           date: receiptDate
       };
 
@@ -488,32 +448,6 @@ export default function UpdateStudentReceipt() {
     }
   }
 
-  React.useEffect(() => {
-    let monthCounter = 0;
-    let k = Number(location.state.receiptDetails.from_month.split(" ")[0]);
-    const fromYear = Number(location.state.receiptDetails.from_month.split(" ")[1]);
-    const toYear = Number(location.state.receiptDetails.to_month.split(" ")[1]);
-    let i=fromYear;
-    
-    while(1){
-      monthCounter++;
-
-      if(k == Number(location.state.receiptDetails.to_month.split(" ")[0]) && i == toYear){
-        break;
-      }
-
-      if(k == 12){
-        i++; 
-        k=1;
-      }
-      else{
-        k++;
-      }
-  
-    }
-
-    setTotalMonths(monthCounter)
-  },[])
   return (
     <div className="relative bg-student-100 py-3 ">
       
@@ -667,8 +601,7 @@ export default function UpdateStudentReceipt() {
                     type="text"
                     autoFocus={true}
                     className="px-2 mr-4 text-xl font-bold outline-none w-32"
-                    placeholder={`${section == 'secondary' ? 'Enter fees' : ''}`}
-                    disabled={section == 'primary'}
+                    placeholder='Enter fees'
                     value={fee}
                   
                     onChange={handleFeesValidation}
@@ -676,24 +609,6 @@ export default function UpdateStudentReceipt() {
                 </div>
                 {errors.amount != '' ? (<small className="text-red-700 mt-2">{errors.amount}</small>) : null}
               </div>
-              {
-                section == 'primary'
-                ?
-                  <div className="ml-10 flex flex-col">
-                      <h2 className="text-[14px]">No. of Months</h2>
-                    <select className="w-28 border-2 mt-2 px-2 py-1 outline-none rounded-md" onChange={handleMonthChange} value={totalMonths}>
-                      <option value="" className="text-gray-400">select</option>
-                      {
-                        _.times(Math.floor(newPendingAmount / Math.floor(student.net_fees / student.batch_duration)), (i)=>(
-                          <option key={i} value={i+1}>{i+1}</option>
-                        ))
-                      }
-                    </select>
-                      {errors.month != '' ? (<small className="text-red-700 mt-2">{errors.month}</small>) : null}
-                  </div>
-                :
-                  null
-              }
               </div>
               <div className=" items-center ml-24">
                 <h1 className="font-bold  text-xl">

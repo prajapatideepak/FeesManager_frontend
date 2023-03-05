@@ -3,8 +3,7 @@ import { RiLogoutCircleRLine } from "react-icons/ri";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaRegUserCircle } from "react-icons/fa";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
-import { MdPeopleOutline } from "react-icons/md";
-import { MdPublishedWithChanges } from "react-icons/md";
+import { IoGitBranch } from "react-icons/io5";
 import { VscKey } from "react-icons/vsc";
 import { NavLink } from "react-router-dom";
 import { NasirContext } from "../NasirContext";
@@ -30,11 +29,13 @@ export default function Searchbar({toggle, SetToggle}) {
   }
   return (
     <div className="w-full z-[101] sticky top-0 bg-white h-[70px] flex flex-row items-center justify-between shadow-[0_10px_10px_-15px_rgba(0,0,0,0.3)]">
-      <div className="left pl-5 w-1/4">
-        {/* This sectione empty for searchbar */}
+      <div className="flex flex-1 justify-end items-center pr-4 mr-4 border-r-2 h-10">
+        <span className="text-base text-gray-400 font-semibold capitalize">
+          {section == 'primary' ? 'Branch 1' : ' Branch 2'}
+        </span>
       </div>
-      <div className="right" onClick={handleToggle}>
-        <div className="top grid grid-col-2 items-center cursor-pointer justify-right space-x-5 pr-5 static">
+      <div className="" onClick={handleToggle}>
+        <div className="top grid grid-col-2 items-center cursor-pointer justify-right space-x-5 mr-5 static">
           <form
             action=""
             className="flex items-center space-x-2 cursor-pointer"
@@ -119,14 +120,11 @@ export default function Searchbar({toggle, SetToggle}) {
                 <div className="nav-link" onClick={(e) => handleSection()}>
                   <div className="bg-white hover:bg-slate-200 text-gray-800  h-11 my-2 cursor-pointer hover:text-blue-500  flex justify-start px-2 hover:rounded-lg ml-4 mr-4 space-x-6  items-center">
                     <div className="bg-blue-200 p-2.5  flex justify-center items-center rounded-full">
-                      <MdPublishedWithChanges className="text-blue-500 text-xl" />
+                      <IoGitBranch className="text-blue-500 text-xl" />
                     </div>
                     <div className="flex flex-col">
                       <span className="md:text-sm xl:text-base">
-                        Change Section
-                      </span>
-                      <span className="text-sm text-gray-400 font-semibold capitalize">
-                        {section}
+                        Change Branch
                       </span>
                     </div>
                   </div>

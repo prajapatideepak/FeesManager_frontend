@@ -398,22 +398,22 @@ const Myclass = () => {
                             <div className="Section">
                               <label className="block">
                                 <span className="block text-sm font-medium text-slate-700">
-                                  Section *
+                                  Branch *
                                 </span>
                                 <select
                                   className={`2xl:w-54 w-[180px]  mt-1 block  px-3 py-2  border  border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 outline-none ${
                                     errors.is_primary && "border-red-600"
                                   }`}
                                   {...register("is_primary", {
-                                    required: "Section is required",
+                                    required: "Branch is required",
                                   })}
                                   onKeyUp={() => {
                                     trigger("is_primary");
                                   }}
                                 >
                                   <option value="">Select</option>
-                                  <option value={1}>Primary</option>
-                                  <option value={0}>Secondary</option>
+                                  <option value={1}>Branch 1</option>
+                                  <option value={0}>Branch 2</option>
                                 </select>
                                 {errors.is_primary && (
                                   <small className="text-red-700">
@@ -605,57 +605,6 @@ const Myclass = () => {
                                       )}
                                     </label>
                                   </div>
-                                  {/* <div className="Batch">
-                                    <label className="block">
-                                      <span className="block text-sm font-medium text-slate-700">
-                                        Batch Starting Year
-                                      </span>
-                                      <div className=" mt-1">
-                                        <div className="input flex items-center border border-slate-300 rounded-md">
-                                          <input
-                                            defaultValue={item.batch_start_year}
-                                            type="text"
-                                            disabled={true}
-                                            placeholder="Starting year"
-                                            className={`xl:w-44 2xl:w-44 block  px-3 py-2 bg-white rounded-md text-sm shadow-sm placeholder-slate-400 outline-none ${
-                                              errors.batch_start_year &&
-                                              "border-red-600"
-                                            }`}
-                                            {...register(
-                                              "batch_start_year_edit",
-                                              {
-                                                pattern: {
-                                                  value: /^[0-9]*$/,
-                                                  message:
-                                                    "Please enter only numbers",
-                                                },
-                                                minLength: {
-                                                  value: 4,
-                                                  message:
-                                                    "Please enter four digits only",
-                                                },
-                                                maxLength: {
-                                                  value: 4,
-                                                  message:
-                                                    "Please enter four digits only",
-                                                },
-                                              }
-                                            )}
-                                            onKeyUp={() => {
-                                              trigger("batch_start_year");
-                                            }}
-                                          />
-                                        </div>
-                                        <div className="msg flex items-center mt-1 ml-1 ">
-                                          {errors.batch_start_year && (
-                                            <small className="text-red-700">
-                                              {errors.batch_start_year.message}
-                                            </small>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </label>
-                                  </div> */}
                                   <div className="Batch Start Date">
                                     <label className="block">
                                       <span className="block text-sm font-medium text-slate-700">
@@ -729,14 +678,14 @@ const Myclass = () => {
                                   <div className="Section">
                                     <label className="block">
                                       <span className="block text-sm font-medium text-slate-700">
-                                        Section
+                                        Branch
                                       </span>
                                       <select
                                         className={`w-44  mt-1 block  px-3 py-2  border  border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 outline-none ${
                                           errors.is_primary && "border-red-600"
                                         }`}
                                         {...register("is_primary", {
-                                          required: "Section is required",
+                                          required: "Branch is required",
                                         })}
                                         onKeyUp={() => {
                                           trigger("is_primary");
@@ -748,7 +697,7 @@ const Myclass = () => {
                                             item.is_primary == 1 ? true : false
                                           }
                                         >
-                                          Primary
+                                          Branch 1
                                         </option>
                                         <option
                                           value={0}
@@ -756,7 +705,7 @@ const Myclass = () => {
                                             item.is_primary == 0 ? true : false
                                           }
                                         >
-                                          Secondary
+                                          Branch 2
                                         </option>
                                       </select>
                                       {errors.is_primary && (

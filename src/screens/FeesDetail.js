@@ -19,7 +19,7 @@ export default function FeesDetail() {
 
   const Months = ['','January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-  const [fee, setFee] = React.useState(section == 'secondary' ? '' : '0');
+  const [fee, setFee] = React.useState('');
   const [discount, setDiscount] = React.useState('');
   const [payment, setPayment] = React.useState("cash");
   const [chequeNo, setChequeNo] = React.useState('');
@@ -28,14 +28,11 @@ export default function FeesDetail() {
   const [toggleCheque, setToggleCheque] = React.useState(false);
   const [toggleUpi, setToggleUpi] = React.useState(false);
   const [toggleCash, setToggleCash] = React.useState(true);
-  const [totalMonths, setTotalMonths] = React.useState(0);
   const [deduction, setDeduction] = React.useState(0);
   const [discountAppliedMsg, setDiscountAppliedMsg] = React.useState(true);
   const [model, setModel] = React.useState(false);
   const [pin, setPin] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [paidUpto, setPaidUpto] = React.useState(Number(student?.paid_upto.split(" ")[0]));
-  let todayDate = new Date();
   todayDate = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1 < 10 ? "0" + (todayDate.getMonth() + 1) : todayDate.getMonth() + 1}-${todayDate.getDate() < 10 ? "0" + todayDate.getDate() : todayDate.getDate()}`;
   const [receiptDate, setReceiptDate] = React.useState(todayDate);
 
@@ -185,36 +182,6 @@ export default function FeesDetail() {
     setDiscountAppliedMsg(true);
   }
 
-  const handleMonthChange = (e) => {
-    let value = e.target.value;
-    if(value == ''){
-      setTotalMonths('')
-      setFee(0)
-      return;
-    }
-
-    let feesPerMonth = student.class_fees / student.batch_duration
-    const months = student.pending_amount/feesPerMonth
-    const monthsInDecimal = months - Math.floor(months);
-    if(monthsInDecimal > 0){
-      value -= 1
-    }
-    let selectedFeesTotal = Math.round(feesPerMonth * Number(value)) + (monthsInDecimal * feesPerMonth)
-    
-    if(selectedFeesTotal > student.pending_amount){
-      selectedFeesTotal = student.pending_amount;
-    }
-
-    setFee(Math.round(selectedFeesTotal) - deduction)
-    setErrors((prevData) => {
-        return {
-          ...prevData,
-          month: ''
-        }
-    })
-    setTotalMonths(e.target.value);
-  }
-
   const handleDiscountValidation = (e)=>{
       const regex = new RegExp(/^[0-9]+$/)
     if(e.target.value != ''){
@@ -343,7 +310,7 @@ export default function FeesDetail() {
 
   const onSubmit = () =>{
       let err = 0;
-      if(section == 'secondary' && fee == ''){
+      if(fee == ''){
           err++;
           setErrors((prevData) => {
               return {
@@ -351,15 +318,6 @@ export default function FeesDetail() {
                 amount: '*Please enter amount'
               }
           })
-      }
-      if(section == 'primary' && totalMonths == ''){
-        err++;
-        setErrors((prevData) => {
-            return {
-              ...prevData,
-              month: '*Please select no. of months'
-            }
-        })
       }
       if(toggleUpi && upiNo == ''){
          err++;
@@ -430,7 +388,7 @@ export default function FeesDetail() {
         admin_id: admin?._id,
         security_pin: pin,
         last_paid: student?.paid_upto,
-        total_months: totalMonths,
+        total_months: 0,
         student_id: student.rollno,
         date: receiptDate
       };
@@ -513,21 +471,6 @@ export default function FeesDetail() {
                     <h2 className="text-sm">Student ID: {student.rollno} </h2>
                     <h3 className="text-sm">Net Fees: {student.net_fees}</h3>
                     <h3 className="text-sm">Pending Fees: {student.pending_amount}</h3>
-                    {
-                      section == 'primary'
-                      ?
-                        <h2 className="text-sm">Last Paid Upto:  
-                          {
-                            paidUpto > 0 
-                            ?
-                              <span className="ml-2 bg-orange-100 rounded-sm px-2">{`${Months[paidUpto]} ${student.paid_upto.split(' ')[1]}`}</span>
-                            :
-                              <span className="text-[16px] ml-2 font-semibold">--</span>
-                          } 
-                        </h2>
-                      :
-                        null
-                    }
                 </div>
                 <div className="text-sm">
                   <h4>Date : {receiptDate.split('-').reverse().join('-')}</h4>
@@ -619,21 +562,6 @@ export default function FeesDetail() {
                 <h3 className="text-[16px] tracking-wide">Student ID: {student.rollno}</h3>
                 <h3 className="text-[16px] tracking-wide">Net Fees: {student.net_fees}</h3>
                 <h3 className="text-[16px] tracking-wide">Pending Fees: {student.pending_amount}</h3>
-                {
-                  section == 'primary'
-                  ?
-                    <h2 className="text-[16px] tracking-wide">Last Paid Upto:  
-                      {
-                        paidUpto > 0 
-                        ?
-                          <span className="ml-2 bg-orange-100 rounded-sm px-2">{`${Months[paidUpto]} ${student.paid_upto.split(' ')[1]}`}</span>
-                        :
-                          <span className="text-[16px] ml-2 font-semibold">--</span>
-                      } 
-                    </h2>
-                  :
-                    null
-                }
             </div>
             <div className="px-7 font-mono">
                 <div className="flex">
@@ -655,39 +583,13 @@ export default function FeesDetail() {
                     type="text"
                     autoFocus={true}
                     className="px-2 mr-4 text-xl font-bold outline-none w-32"
-                    placeholder={`${section == 'secondary' ? 'Enter fees' : ''}`}
+                    placeholder="Enter fees"
                     value={fee}
-                    disabled={section == 'primary'}
                     onChange={handleFeesValidation}
                   />
                 </div>
                 {errors.amount != '' ? (<small className="text-red-700 mt-2">{errors.amount}</small>) : null}
               </div>
-              {
-                section == 'primary'
-                ?
-                  <div className="ml-10 flex flex-col">
-                      <h2 className="text-[14px]">No. of Months</h2>
-                    <select className="w-28 border-2 mt-2 px-2 py-1 outline-none rounded-md" onChange={handleMonthChange}>
-                      <option value="" className="text-gray-400">select</option>
-                      {
-                        //calculating the remaining months
-                        _.times(
-                          student.pending_amount / Math.floor(student.class_fees / student.batch_duration) > 0 && student.pending_amount / Math.floor(student.class_fees / student.batch_duration) < 1
-                          ?
-                            1
-                          :
-                            Math.ceil(student.pending_amount / Math.floor(student.class_fees / student.batch_duration))
-                          , (i)=>(
-                          <option value={i+1}>{i+1}</option>
-                        ))
-                      }
-                    </select>
-                      {errors.month != '' ? (<small className="text-red-700 mt-2">{errors.month}</small>) : null}
-                  </div>
-                :
-                  null
-              }
             </div>
             <div className=" items-center ml-24">
               <h1 className="font-bold  text-xl">

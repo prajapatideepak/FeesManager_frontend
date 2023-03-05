@@ -1,10 +1,8 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { GiSchoolBag } from "react-icons/gi";
-import { TbSchool } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
+import { IoGitBranch } from "react-icons/io5";
 import { BiChevronRight } from "react-icons/bi";
-import Loginimage from "../Componant/Loginimage";
-import { getToken, setToken } from "../AuthProvider";
+import { setToken } from "../AuthProvider";
 import { NasirContext } from "../NasirContext";
 
 const Dashboardsection = () => {
@@ -37,8 +35,8 @@ const Dashboardsection = () => {
                     className="primary flex items-center justify-between bg-[#fec7c2] text-[#0F0673] mb-5 w-60 py-2 rounded-xl cursor-pointer   hover:bg-[#fe786c]"
                   >
                     <div className="flex items-center justify-start mx-2">
-                      <GiSchoolBag className="text-2xl mx-2 " />
-                      <h1 className="font-semibold text-lg">Primary</h1>
+                      <IoGitBranch className="text-2xl mx-2 " />
+                      <h1 className="font-semibold text-lg">Branch 1</h1>
                     </div>
                     <div className="mt-1 mr-3 ">
                       <BiChevronRight className=" text-2xl font-extrabold" />
@@ -49,8 +47,8 @@ const Dashboardsection = () => {
                     className="primary flex items-center justify-between bg-[#fec7c2] text-[#0F0673] mb-5 w-60 py-2 rounded-xl cursor-pointer   hover:bg-[#fe786c]"
                   >
                     <div className="flex items-center justify-start mx-2">
-                      <TbSchool className="text-2xl mx-2 " />
-                      <h1 className="font-semibold text-lg">Secondary</h1>
+                      <IoGitBranch className="text-2xl mx-2 " />
+                      <h1 className="font-semibold text-lg">Branch 2</h1>
                     </div>
                     <div className="mt-1 mr-3 ">
                       <BiChevronRight className=" text-2xl font-extrabold" />
