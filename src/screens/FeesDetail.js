@@ -33,6 +33,7 @@ export default function FeesDetail() {
   const [model, setModel] = React.useState(false);
   const [pin, setPin] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  let todayDate = new Date();
   todayDate = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1 < 10 ? "0" + (todayDate.getMonth() + 1) : todayDate.getMonth() + 1}-${todayDate.getDate() < 10 ? "0" + todayDate.getDate() : todayDate.getDate()}`;
   const [receiptDate, setReceiptDate] = React.useState(todayDate);
 

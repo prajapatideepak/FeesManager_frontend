@@ -1,14 +1,8 @@
 import React from "react";
 import { TbCurrencyRupee } from "react-icons/tb";
 import styled from "styled-components";
-import {NasirContext} from '../NasirContext'
 
 function Receipt_student({receiptDetails, forOffice}) {
-  const {section} = React.useContext(NasirContext);
-  const [fromMonth, setFromMonth] = React.useState(Number(receiptDetails?.from_month?.split(" ")[0]))
-  const [fromYear, setFromYear] = React.useState(Number(receiptDetails?.from_month?.split(" ")[1]))
-  const [toMonth, setToMonth] = React.useState(Number(receiptDetails?.to_month?.split(" ")[0]))
-  const [toYear, setToYear] = React.useState(Number(receiptDetails?.to_month?.split(" ")[1]))
 
   const Months = ['','January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -36,23 +30,6 @@ function Receipt_student({receiptDetails, forOffice}) {
           >
             <p className="text-sm text-white  py-1 px-2 ">STUDENT FEES RECEIPT {forOffice}</p>
           </div>
-          {
-            section == 'primary'
-            ?
-              <div className={`border-2 border-red-600 w-26 rounded-md flex justify-center items-center`}>
-                <p className="text-red-600 font-semibold px-4">
-                  {
-                    fromMonth == toMonth 
-                    ?
-                      <span>{Months[fromMonth]} {fromYear}</span>
-                    :
-                      <span className="">{Months[fromMonth]} {fromYear}-{Months[toMonth] } {toYear}</span>
-                  }
-                </p>
-              </div>
-            :
-              null
-          }
           <div>
             <p className={`${receiptTextColor} font-bold`}>
               Receipt No: <span className="text-black">{receiptDetails?.receipt_no}</span>
