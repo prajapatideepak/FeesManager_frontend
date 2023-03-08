@@ -74,6 +74,10 @@ export default function UpdateStudentReceipt() {
   });
 
   function handleDiscount(e) {
+    if(errors.discount != ''){
+      return;
+    }
+    
     if(discount == '' ){
         setErrors((prevData)=>{
             return{

@@ -11,6 +11,8 @@ const Studentregister = () => {
     const defaultImage = "images/user_default@123.png"
     const {section} = React.useContext(NasirContext);
     const isPrimary =  section == 'primary' ? 1 : 0
+
+    const currentDate = `${new Date().getFullYear()}-${new Date().getMonth() + 1 < 10 ? "0" + (new Date().getMonth() + 1) : new Date().getMonth() + 1}-${new Date().getDate() < 10 ? "0" + new Date().getDate() : new Date().getDate()}`
     
     const [img, setImg] = useState(defaultImage);
     const [medium, setMedium] = useState('--');
@@ -20,7 +22,7 @@ const Studentregister = () => {
     const [selectedClassDetails, setSelectedClassDetails] = useState({})
     const [classes, setClasses] = useState([]);
     const [isLoadingOnSubmit, setIsLoadingOnSubmit] = useState(false);
-    const [admissionDate, setAdmissionDate] = useState(new Date().toLocaleDateString('en-CA'))
+    const [admissionDate, setAdmissionDate] = useState(currentDate)
     const navigate = useNavigate();
     
     const onImageChange = (e) => {
@@ -81,7 +83,7 @@ const Studentregister = () => {
         setMedium('--');
         setStream('--');
         setNetFees(0);
-        setAdmissionDate(new Date().toLocaleDateString('en-CA'))
+        setAdmissionDate(currentDate)
         setTotalFees(0)
         setImg(defaultImage);
         document.getElementById('file').value = '';

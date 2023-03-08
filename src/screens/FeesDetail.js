@@ -48,6 +48,10 @@ export default function FeesDetail() {
   });
 
   function handleDiscount(e) {
+    if(errors.discount != ''){
+      return;
+    }
+    
     if(discount == '' ){
         setErrors((prevData)=>{
             return{
